@@ -409,6 +409,7 @@ class HTMLReport(object):
             onLoad='init()')
 
         body.extend(self._generate_environment(session.config))
+        body.extend(self._generate_data_summary(session.config))
         body.extend(summary)
         body.extend(results)
 
@@ -438,6 +439,26 @@ class HTMLReport(object):
 
         environment.append(html.table(rows, id='environment'))
         return environment
+
+    def _generate_data_summary(self, config):
+        if not hasattr(config, '_modelmeta') or config._modelmeta is None:
+            return []
+
+        metadata = config._modelmeta
+        summary = [html.h2('Model Metadata')]
+        rows = []
+
+        for key in [k for k in metadata.keys()]:
+            value = metadata[key]
+            if isinstance(value, basestring) and value.startswith('http'):
+                value = html.a(value, href=value, target='_blank')
+            if value is None:
+                value = ''
+            rows.append(html.tr(html.td(key), html.td(value)))
+
+        summary.append(html.table(rows, id='environment'))
+        return summary
+
 
     def _save_report(self, report_content):
         dir_name = os.path.dirname(self.logfile)
